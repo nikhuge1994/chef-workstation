@@ -20,34 +20,30 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/chef/chef-workstation/components/main-chef-wrapper/dist"
 	"github.com/spf13/cobra"
 )
 
-// pushCmd represents the push command
 var pushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "push POLICY_GROUP [ POLICY_FILE ]",
+	Short: "Push a local policyfile lock to a policy group on the %s",
+	Long: `Upload an existing Policyfile.lock.json to a %s, along
+with all the cookbooks contained in the policy lock. The policy lock is applied
+to a specific POLICY_GROUP, which is a set of nodes that share the same
+run_list and cookbooks.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+See the Policyfile documentation for more information:
+
+https://docs.chef.io/policyfile/
+`,
+
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("push called")
+		passThroughCommand("chef-cli", "push", args)
 	},
 }
 
 func init() {
+	pushCmd.Short = fmt.Sprintf(pushCmd.Short, dist.ServerProduct)
+	pushCmd.Long = fmt.Sprintf(pushCmd.Long, dist.ServerProduct)
 	rootCmd.AddCommand(pushCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// pushCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// pushCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
