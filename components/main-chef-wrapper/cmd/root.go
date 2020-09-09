@@ -20,6 +20,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/chef/chef-workstation/components/main-chef-wrapper/dist"
 	"github.com/spf13/cobra"
@@ -84,4 +85,37 @@ func init() {
 		"Enable debug output when available")
 	rootCmd.PersistentFlags().BoolVarP(&options.debug, "version", "v", false,
 		fmt.Sprintf("Show %s version information", dist.WorkstationProduct))
+}
+
+func passThroughCommand(targetPath string, cmdName string, args []string) error {
+	fmt.Printf("Calling %s\n", targetPath)
+	cmdArg := []string{cmdName}
+
+	allArgs := append(cmdArg, args...)
+	cmd := exec.Command(targetPath, allArgs...)
+	cmd.Env = os.Environ()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	if err := cmd.Run(); err != nil {
+
+		fmt.Printf("Calling 2 %v\n", err)
+		return err
+	}
+	return nil
+
+	// TODO - verify that the cobra framework will pass along
+	//        the error exit code from a called exec.
+	//    A: Nope
+	// If we can cast this to an ExitError, then exit with the provided
+	// exit code.
+	// if exitError, ok := err.(*exec.ExitError); ok {
+	//
+	//   os.Exit(exitError.ExitCode())
+	// }
+	//
+	// // Otherwise something like 'executable not found' and other
+	// // non-exec errors
+	// os.Exit(7)
+
 }
