@@ -88,7 +88,6 @@ func init() {
 }
 
 func passThroughCommand(targetPath string, cmdName string, args []string) error {
-	fmt.Printf("Calling %s\n", targetPath)
 	cmdArg := []string{cmdName}
 
 	allArgs := append(cmdArg, args...)
@@ -98,15 +97,13 @@ func passThroughCommand(targetPath string, cmdName string, args []string) error 
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
-
-		fmt.Printf("Calling 2 %v\n", err)
 		return err
 	}
 	return nil
 
 	// TODO - verify that the cobra framework will pass along
 	//        the error exit code from a called exec.
-	//    A: Nope
+	//    A: (TODO mp 2020-09-09) Nope, it does not.
 	// If we can cast this to an ExitError, then exit with the provided
 	// exit code.
 	// if exitError, ok := err.(*exec.ExitError); ok {
