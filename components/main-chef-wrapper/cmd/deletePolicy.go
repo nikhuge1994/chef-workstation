@@ -20,25 +20,30 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/chef/chef-workstation/components/main-chef-wrapper/dist"
 	"github.com/spf13/cobra"
 )
 
 // deletePolicyCmd represents the deletePolicy command
 var deletePolicyCmd = &cobra.Command{
-	Use:   "delete-policy",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "delete-policy POLICY_NAME",
+	Short: "delete all revisions of POLICY_NAME policy on the %s",
+	Long: `
+Delete all revisions of the policy POLICY_NAME on the configured
+%s. All policy revisions will be backed up locally, allowing you to
+undo this operation via the '%s undelete' command.
+`,
+	Args: cobra.ExactArgs(1),
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("deletePolicy called")
 	},
 }
 
 func init() {
+	deletePolicyCmd.Short = fmt.Sprintf(deletePolicyCmd.Short, dist.ServerProduct)
+	deletePolicyCmd.Long = fmt.Sprintf(deletePolicyCmd.Long, dist.ServerProduct, dist.CLIWrapperExec)
+
 	rootCmd.AddCommand(deletePolicyCmd)
 
 	// Here you will define your flags and configuration settings.

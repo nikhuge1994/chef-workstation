@@ -24,11 +24,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// cleanPolicyCoobooksCmd represents the cleanPolicyCoobooks command
 var cleanPolicyCoobooksCmd = &cobra.Command{
 	Use:   "clean-policy-cookbooks",
-	Short: "Deletes unused Policyfile cookbooks",
-	Long: `Delete unused Policyfile cookbooks.  Cookbooks are considered  unused
+	Short: "Deletes unused Policyfile cookbooks on the %s",
+	Long: `Delete unused Policyfile cookbooks.  Cookbooks are considered unused
 when they are not referenced by any Policyfile revision on the %s.
 This command will be most helpful when you first run "chef clean-policy-revisions"
 in order to remove unreferenced Policy revisions.
@@ -43,6 +42,8 @@ https://docs.chef.io/policyfile/
 }
 
 func init() {
+	cleanPolicyCoobooksCmd.Short = fmt.Sprintf(cleanPolicyCoobooksCmd.Short,
+		dist.ServerProduct)
 	cleanPolicyCoobooksCmd.Long = fmt.Sprintf(cleanPolicyCoobooksCmd.Long,
 		dist.ServerProduct)
 	rootCmd.AddCommand(cleanPolicyCoobooksCmd)

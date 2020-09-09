@@ -20,34 +20,31 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/chef/chef-workstation/components/main-chef-wrapper/dist"
 	"github.com/spf13/cobra"
 )
 
 // cleanPolicyRevisionsCmd represents the cleanPolicyRevisions command
 var cleanPolicyRevisionsCmd = &cobra.Command{
 	Use:   "clean-policy-revisions",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Delete unused policy revisions on the %s",
+	Long: `
+'clean-policy-revisions' deletes orphaned Policyfile revisions from the
+%s. Orphaned Policyfile revisions are not associated to any group, and
+are therefore not in active use by any nodes.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+To list orphaned Policyfile revisions before deletying them,
+use '%s show-policy --orphans'.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("cleanPolicyRevisions called")
 	},
 }
 
 func init() {
+	cleanPolicyRevisionsCmd.Short = fmt.Sprintf(cleanPolicyRevisionsCmd.Short, dist.ServerProduct)
+	cleanPolicyRevisionsCmd.Long = fmt.Sprintf(cleanPolicyRevisionsCmd.Long,
+		dist.ServerProduct, dist.CLIWrapperExec)
+
 	rootCmd.AddCommand(cleanPolicyRevisionsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// cleanPolicyRevisionsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// cleanPolicyRevisionsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -26,14 +26,32 @@ import (
 
 // shellInitCmd represents the shellInit command
 var shellInitCmd = &cobra.Command{
-	Use:   "shellInit",
-	Short: "Initialize your shell to use %s as your development environment",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "shell-init ",
+	Short: "Set shell context to the %s environment",
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `
+'%s shell-init' modifies your shell environment to make %s your
+default Ruby.
+
+  To enable for just the current shell session:
+
+    In sh, bash, and zsh:
+      eval "$(%s shell-init SHELL_NAME)"
+    In fish:
+      eval (%s shell-init fish)
+    In Powershell:
+      chef shell-init powershell | Invoke-Expression
+
+  To permanently enable:
+
+    In sh, bash, and zsh:
+      echo 'eval "$(%s shell-init SHELL_NAME)"' >> ~/.YOUR_SHELL_RC_FILE
+    In fish:
+      echo 'eval (%s shell-init SHELL_NAME)' >> ~/.config/fish/config.fish
+    In Powershell
+      "chef shell-init powershell | Invoke-Expression" >> $PROFILE
+`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("shellInit called")
 	},
@@ -41,6 +59,10 @@ to quickly create a Cobra application.`,
 
 func init() {
 	shellInitCmd.Short = fmt.Sprintf(shellInitCmd.Short, dist.WorkstationProduct)
+	shellInitCmd.Long = fmt.Sprintf(shellInitCmd.Long, dist.CLIWrapperExec, dist.WorkstationProduct,
+		dist.CLIWrapperExec, dist.CLIWrapperExec, dist.CLIWrapperExec, dist.CLIWrapperExec)
+
+	// TODO - not adding '--omnibus-dir' flag which was documented for testing only.
 	rootCmd.AddCommand(shellInitCmd)
 
 	// Arg not carred over from hh
