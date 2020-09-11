@@ -19,6 +19,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/chef/chef-workstation/components/main-chef-wrapper/dist"
 	"github.com/spf13/cobra"
@@ -36,9 +37,9 @@ See the Policyfile documentation for more information:
 
 https://docs.chef.io/policyfile/
 `,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		passThroughCommand("chef-cli", "push", args)
+	FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return passThroughCommand("chef-cli", "", os.Args[1:])
 	},
 }
 

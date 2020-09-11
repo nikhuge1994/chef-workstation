@@ -18,6 +18,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -52,21 +53,31 @@ type rootConfig struct {
 
 var (
 	options rootConfig
-	// rootCmd represents the base command when called without any subcommands
+
 	rootCmd = &cobra.Command{
 		Use:   "chef",
 		Short: "chef",
-		// Uncomment the following line if your bare application
-		// has an action associated with it:
-		//	Run: func(cmd *cobra.Command, args []string) { },
+		// This flags means that no error info will be output by default when
+		// a command fails.  This is good in the most common supported case -
+		// dispatching to a command handled by another binary. In that case, we
+		// rely on the binary to report its own errors, and don't want to show an
+		// extra message if it exits non-zero.
+		// For commands implemented internally, we will want to explicitly set
+		// SilenceErrors: false on those commands, so that those errors are displayed.
+		SilenceErrors: true,
+
+		// Arg validation
+		// Args: func(cmd *cobra.Command, args []string) {}
+		// RunE: func(cmd *cobra.Command, args []string) { } error,
 	}
 )
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	var ee *exec.ExitError
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		if errors.As(err, &ee) {
+			os.Exit(ee.ExitCode())
+		}
 		os.Exit(1)
 	}
 }
@@ -76,9 +87,14 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// PersistentFlags are also available in child commands.
+	// TODO is there a a way to have these _only_ in child commands, without
+	//      having them visible in root command? This would avoid us having to implement
+	//      license handling prematurely in case someone wants to `chef --chef-license accept`
+
+	// These flags are common to all child commands.  Some of them do not need config or debug,
+	// so we can look at pushing this down; but it seems to make sense since it's present for more
+	// commands than it isn't.
 	rootCmd.PersistentFlags().StringVarP(&options.configFile, "config", "c", "", "Read configuration from `CONFIG_FILE_PATH`")
-	// TODO - I think cobra has some support for lists of acceptable param values
 	rootCmd.PersistentFlags().StringVar(&options.licenseAcceptance, "chef-license", "",
 		"Accept product license, where `ACCEPTANCE` is one of 'accept', 'accept-no-persist', or 'accept-silent'")
 	rootCmd.PersistentFlags().BoolVarP(&options.debug, "debug", "d", false,
@@ -87,32 +103,23 @@ func init() {
 		fmt.Sprintf("Show %s version information", dist.WorkstationProduct))
 }
 
+// TODO -
 func passThroughCommand(targetPath string, cmdName string, args []string) error {
-	cmdArg := []string{cmdName}
 
-	allArgs := append(cmdArg, args...)
+	var allArgs []string
+	if cmdName != "" {
+		allArgs = append([]string{cmdName}, args...)
+	} else {
+		allArgs = args
+	}
+
+	//
 	cmd := exec.Command(targetPath, allArgs...)
 	cmd.Env = os.Environ()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
 
-	// TODO - verify that the cobra framework will pass along
-	//        the error exit code from a called exec.
-	//    A: (TODO mp 2020-09-09) Nope, it does not.
-	// If we can cast this to an ExitError, then exit with the provided
-	// exit code.
-	// if exitError, ok := err.(*exec.ExitError); ok {
-	//
-	//   os.Exit(exitError.ExitCode())
-	// }
-	//
-	// // Otherwise something like 'executable not found' and other
-	// // non-exec errors
-	// os.Exit(7)
+	return cmd.Run()
 
 }
